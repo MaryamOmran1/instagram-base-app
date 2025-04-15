@@ -1,23 +1,31 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../firebase";
 
-const AuthForm = () => {
-  const navigate = useNavigate();
+export default function AuthForm() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isCreatingAccount, setIsCreatingAccount] = useState(false);
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    // Handle authentication logic here
-
-    // On successful authentication, navigate to NewsFeed
-    navigate("/");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      isCreatingAccount
+        ? await createUserWithEmailAndPassword(auth, email, password)
+        : await signInWithEmailAndPassword(auth, email, password);
+    } catch (err) {
+      alert(err.message);
+    }
   };
 
   return (
     <form onSubmit={handleSubmit}>
-      {/* Form elements here, e.g., Email and Password inputs */}
-      <button type="submit">Login</button>
+      <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+      <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+      <button type="submit">{isCreatingAccount ? "Sign Up" : "Sign In"}</button>
+      <p onClick={() => setIsCreatingAccount(!isCreatingAccount)}>
+        {isCreatingAccount ? "Already have an account? Sign in" : "New user? Create account"}
+      </p>
     </form>
   );
-};
-
-export default AuthForm;
+}
